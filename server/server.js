@@ -30,7 +30,7 @@ app.get("/todos", (request, response) => {
     });
 });
 
-app.listen(3000, () =>{
+app.listen(3000, () => {
     console.log("Server up on port 3000");
 });
 
