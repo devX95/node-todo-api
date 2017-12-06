@@ -42,11 +42,23 @@ app.get('/todos/:id', (request, response) => {
     }
     Todo.findById(id).then((todo) => {
         if(!todo){
-            response.status(404).send();
-        } else {
-            response.send({todo});
+            return response.status(404).send();
         }
+        response.send({todo});
     }).catch((e) => response.status(404).send());
+});
+
+app.delete('/todos/:id', (request, response) => {
+    var id = request.params.id;
+    if(!ObjectID.isValid(id)){
+        response.status(404).send();
+    }
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if(!todo) {
+            return response.status(404).send();
+        }
+        response.send({todo});
+    }).catch((e) => response.status(400).send(e));
 });
 
 app.listen(port, () => {
