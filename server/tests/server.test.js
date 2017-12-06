@@ -10,13 +10,29 @@ const todos = [{
     text: 'first test'
 }, {
     _id: new ObjectID(),
-    text: 'second test'
+    text: 'second test',
+    completed: true,
+    completedAt: 333
 }];
 
 beforeEach((done) => {
     Todo.remove({}).then(()=> {
         return Todo.insertMany(todos);
     }).then(() => done());
+});
+
+expect.extend({
+	toBeType(received, argument) {
+		const initialType = typeof received;
+		const type = initialType === "object" ? Array.isArray(received) ? "array" : initialType : initialType;
+		return type === argument ? {
+			message: () => `expected ${received} to be type ${argument}`,
+			pass: true
+		} : {
+			message: () => `expected ${received} to be type ${argument}`,
+			pass: false
+		};
+	}
 });
 
 describe('POST /todos', () => {
@@ -130,6 +146,44 @@ describe('DELETE /todos', () => {
         request(app)
         .delete(`/todos/123`)
         .expect(404)
+        .end(done);
+    });
+});
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', (done) => {
+        var id = todos[0]._id.toHexString();
+        var body = {
+            text: "Updated",
+            completed: true
+        };
+        request(app)
+        .patch(`/todos/${id}`)
+        .send(body)
+        .expect(200)
+        .expect((response) => {
+            expect(response.body.todo.text).toBe(body.text);
+            expect(response.body.todo.completed).toBeTruthy();
+            expect(response.body.todo.completedAt).toBeType("number");
+        })
+        .end(done);
+    });
+
+    it("should clear completedAt when todo is not completed", (done) => {
+        var id = todos[1]._id.toHexString();
+        var body = {
+            text: "Updated",
+            completed: false
+        };
+        request(app)
+        .patch(`/todos/${id}`)
+        .send(body)
+        .expect(200)
+        .expect((response) => {
+            expect(response.body.todo.text).toBe(body.text);
+            expect(response.body.todo.completed).toBeFalsy();
+            expect(response.body.todo.completedAt).toBeFalsy();
+        })
         .end(done);
     });
 });
