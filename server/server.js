@@ -118,6 +118,14 @@ app.post('/users/login/', (request, response) => {
     }).catch((e) => response.status(400).send(e));
 });
 
+app.delete('/users/me/token', authenticate, (request, response) => {
+    request.user.removeToken(request.token).then(()=> {
+        response.status(200).send();
+    }, () => {
+        response.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server up on port ${port}`);
 });
